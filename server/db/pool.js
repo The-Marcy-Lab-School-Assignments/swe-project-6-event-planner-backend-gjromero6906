@@ -1,15 +1,18 @@
-
+require('dotenv').config()
 const { Pool } = require('pg');
 
 const config = {
-  host: 'localhost',
-  port: 5432,
-  database: 'event_planner_db',
+  host: process.env.PGHOST,
+  port: process.env.PGPORT,
+  database: process.env.PGDATABASE,
   user: 'postgres',
   password: 'marcy',
 };
 
+const prodConfig = {
+  connectionString: process.env.PG_CONNECTION_STRING,
+}
 
-const pool = new Pool(config);
+const pool = new Pool(prodConfig);
 
 module.exports = pool;
