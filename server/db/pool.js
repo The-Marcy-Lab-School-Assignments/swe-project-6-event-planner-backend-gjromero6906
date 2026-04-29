@@ -5,8 +5,8 @@ const config = {
   host: process.env.PGHOST,
   port: process.env.PGPORT,
   database: process.env.PGDATABASE,
-  user: 'postgres',
-  password: 'marcy',
+  user: process.env.PGUSER,
+  password: process.env.PGPASSWORD,
 };
 
 const prodConfig = {
