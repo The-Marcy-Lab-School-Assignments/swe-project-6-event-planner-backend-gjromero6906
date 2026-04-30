@@ -45,7 +45,7 @@ const getMe = async (req, res, next) => {
   try {
     const userId = req.session.userId;
     if (!userId) {
-      return res.send(null);
+      return res.status(401).send(null);
     }
 
     const user = await userModel.find(userId);

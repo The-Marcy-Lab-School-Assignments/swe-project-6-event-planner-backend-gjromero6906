@@ -22,7 +22,7 @@ const seed = async () => {
             event_id       SERIAL PRIMARY KEY,
             title          TEXT NOT NULL,
             description    TEXT,
-            event_date     TEXT NOT NULL,
+            date           TEXT NOT NULL,
             location       TEXT NOT NULL,
             event_type     TEXT NOT NULL,
             max_capacity   INTEGER NOT NULL,
@@ -53,7 +53,7 @@ const seed = async () => {
     const carolId = carolResponse.rows[0].user_id;
 
     const insertEventSql = `
-        INSERT INTO events (title, description, event_date, location, event_type, max_capacity, user_id)
+        INSERT INTO events (title, description, date, location, event_type, max_capacity, user_id)
         VALUES ($1, $2, $3, $4, $5, $6, $7)
         RETURNING event_id;
     `;
@@ -63,7 +63,7 @@ const seed = async () => {
         'Board games, snacks, and friendly competition.',
         '2026-05-15',
         'Community Center',
-        'Social',
+        'social',
         30,
         aliceId,
     ]);
@@ -73,18 +73,52 @@ const seed = async () => {
         'Interactive session on event planning and coordination.',
         '2026-06-02',
         'City Library',
-        'Workshop',
+        'workshop',
         20,
+        bobId,
+    ]);
+
+    const eventThree = await pool.query(insertEventSql, [
+        'Startup Networking Breakfast',
+        'Meet founders, mentors, and future collaborators.',
+        '2026-05-28',
+        'Downtown Cafe',
+        'networking',
+        50,
+        aliceId,
+    ]);
+
+    const eventFour = await pool.query(insertEventSql, [
+        'Charity Concert',
+        'Local bands perform to raise funds for the community.',
+        '2026-07-10',
+        'River Park',
+        'concert',
+        200,
+        carolId,
+    ]);
+
+    const eventFive = await pool.query(insertEventSql, [
+        'Sports Fundraiser',
+        'Pickup basketball, refreshments, and donation drive.',
+        '2026-08-05',
+        'High School Gym',
+        'sports',
+        40,
         bobId,
     ]);
 
     const eventOneId = eventOne.rows[0].event_id;
     const eventTwoId = eventTwo.rows[0].event_id;
+    const eventThreeId = eventThree.rows[0].event_id;
+    const eventFourId = eventFour.rows[0].event_id;
 
     const insertRsvpSql = 'INSERT INTO rsvps (user_id, event_id) VALUES ($1, $2);';
     await pool.query(insertRsvpSql, [bobId, eventOneId]);
     await pool.query(insertRsvpSql, [carolId, eventOneId]);
     await pool.query(insertRsvpSql, [aliceId, eventTwoId]);
+    await pool.query(insertRsvpSql, [carolId, eventThreeId]);
+    await pool.query(insertRsvpSql, [aliceId, eventFourId]);
 
     return {
         users: [

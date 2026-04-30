@@ -11,8 +11,10 @@ const config = {
 
 const prodConfig = {
   connectionString: process.env.PG_CONNECTION_STRING,
-}
+};
 
-const pool = new Pool(prodConfig);
+const pool = process.env.PG_CONNECTION_STRING
+  ? new Pool(prodConfig)
+  : new Pool(config);
 
 module.exports = pool;

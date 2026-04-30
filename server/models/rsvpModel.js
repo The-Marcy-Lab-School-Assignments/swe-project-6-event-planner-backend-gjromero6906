@@ -28,7 +28,7 @@ module.exports.listByUser = async (user_id) => {
       events.event_id,
       events.title,
       events.description,
-      events.event_date AS date,
+      events.date AS date,
       events.location,
       events.event_type,
       events.max_capacity,
@@ -41,7 +41,7 @@ module.exports.listByUser = async (user_id) => {
     LEFT JOIN rsvps AS rsvps2 ON events.event_id = rsvps2.event_id
     WHERE rsvps.user_id = $1
     GROUP BY events.event_id, users.username
-    ORDER BY events.event_date
+    ORDER BY events.date
   `;
   const { rows } = await pool.query(query, [user_id]);
   return rows;

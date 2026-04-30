@@ -6,7 +6,7 @@ module.exports.list = async () => {
       events.event_id,
       events.title,
       events.description,
-      events.event_date AS date,
+      events.date AS date,
       events.location,
       events.event_type,
       events.max_capacity,
@@ -17,10 +17,28 @@ module.exports.list = async () => {
     JOIN users ON events.user_id = users.user_id
     LEFT JOIN rsvps ON events.event_id = rsvps.event_id
     GROUP BY events.event_id, users.username
-    ORDER BY events.event_id
+    ORDER BY events.date ASC
   `;
   const { rows } = await pool.query(query);
   return rows;
+};
+
+module.exports.findById = async (event_id) => {
+  const query = `
+    SELECT
+      event_id,
+      title,
+      description,
+      date,
+      location,
+      event_type,
+      max_capacity,
+      user_id
+    FROM events
+    WHERE event_id = $1
+  `;
+  const { rows } = await pool.query(query, [event_id]);
+  return rows[0] || null;
 };
 
 module.exports.listByUser = async (user_id) => {
@@ -29,19 +47,17 @@ module.exports.listByUser = async (user_id) => {
       events.event_id,
       events.title,
       events.description,
-      events.event_date AS date,
+      events.date AS date,
       events.location,
       events.event_type,
       events.max_capacity,
       events.user_id,
-      users.username,
       COUNT(rsvps.rsvp_id) AS rsvp_count
     FROM events
-    JOIN users ON events.user_id = users.user_id
     LEFT JOIN rsvps ON events.event_id = rsvps.event_id
     WHERE events.user_id = $1
-    GROUP BY events.event_id, users.username
-    ORDER BY events.event_date
+    GROUP BY events.event_id
+    ORDER BY events.date ASC
   `;
   const { rows } = await pool.query(query, [user_id]);
   return rows;
@@ -51,7 +67,7 @@ module.exports.create = async (
   user_id,
   title,
   description,
-  event_date,
+  date,
   location,
   event_type,
   max_capacity
@@ -60,18 +76,18 @@ module.exports.create = async (
     INSERT INTO events (
       title,
       description,
-      event_date,
+      date,
       location,
       event_type,
       max_capacity,
       user_id
     ) VALUES ($1, $2, $3, $4, $5, $6, $7)
-    RETURNING event_id, title, description, event_date AS date, location, event_type, max_capacity, user_id
+    RETURNING event_id, title, description, date, location, event_type, max_capacity, user_id
   `;
   const { rows } = await pool.query(query, [
     title,
     description,
-    event_date,
+    date,
     location,
     event_type,
     max_capacity,
@@ -84,7 +100,7 @@ module.exports.update = async (
   event_id,
   title,
   description,
-  event_date,
+  date,
   location,
   event_type,
   max_capacity,
@@ -92,20 +108,20 @@ module.exports.update = async (
 ) => {
   const query = `
     UPDATE events
-    SET title = $1,
-        description = $2,
-        event_date = $3,
-        location = $4,
-        event_type = $5,
-        max_capacity = $6
+    SET title = COALESCE($1, title),
+        description = COALESCE($2, description),
+        date = COALESCE($3, date),
+        location = COALESCE($4, location),
+        event_type = COALESCE($5, event_type),
+        max_capacity = COALESCE($6, max_capacity)
     WHERE event_id = $7
       AND user_id = $8
-    RETURNING event_id, title, description, event_date AS date, location, event_type, max_capacity, user_id
+    RETURNING event_id, title, description, date, location, event_type, max_capacity, user_id
   `;
   const { rows } = await pool.query(query, [
     title,
     description,
-    event_date,
+    date,
     location,
     event_type,
     max_capacity,
@@ -120,7 +136,7 @@ module.exports.destroy = async (event_id, user_id) => {
     DELETE FROM events
     WHERE event_id = $1
       AND user_id = $2
-    RETURNING event_id
+    RETURNING event_id, title, description, date, location, event_type, max_capacity, user_id
   `;
   const { rows } = await pool.query(query, [event_id, user_id]);
   return rows[0] || null;

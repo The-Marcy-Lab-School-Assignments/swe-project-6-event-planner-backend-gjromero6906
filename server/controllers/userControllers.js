@@ -54,7 +54,8 @@ const deleteUser = async (req, res, next) => {
       return res.status(404).send({ message: 'User not found.' });
     }
 
-    return res.send({ message: 'User deleted.' });
+    req.session = null;
+    return res.send(user);
   } catch (err) {
     return next(err);
   }
