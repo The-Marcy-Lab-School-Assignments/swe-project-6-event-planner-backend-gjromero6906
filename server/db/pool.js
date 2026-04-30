@@ -11,6 +11,9 @@ const config = {
 
 const prodConfig = {
   connectionString: process.env.PG_CONNECTION_STRING,
+   ssl: process.env.NODE_ENV === 'production'
+    ? { rejectUnauthorized: false }
+    : false,
 };
 
 const pool = process.env.PG_CONNECTION_STRING
